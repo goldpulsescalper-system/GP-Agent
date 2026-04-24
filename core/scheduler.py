@@ -6,19 +6,33 @@ from core.ai import generate_response
 
 logger = logging.getLogger(__name__)
 
-async def post_education(context: ContextTypes.DEFAULT_TYPE):
-    """Job untuk post edukasi."""
-    logger.info("Menjalankan job post edukasi...")
-    prompt = get_education_prompt()
+async def post_education_morning(context: ContextTypes.DEFAULT_TYPE):
+    """Job untuk post edukasi pagi."""
+    logger.info("Menjalankan job post edukasi pagi...")
+    prompt = get_education_prompt("morning")
     messages = [{"role": "system", "content": prompt}]
     content = await generate_response(messages, temperature=0.8)
     
     if content and "Sori banget" not in content:
         try:
-            await context.bot.send_message(chat_id=CHANNEL_ID, text=content)
-            logger.info("Edukasi berhasil di-post.")
+            await context.bot.send_message(chat_id=CHANNEL_ID, text=content, parse_mode='HTML')
+            logger.info("Edukasi pagi berhasil di-post.")
         except Exception as e:
-            logger.error(f"Gagal mengirim post edukasi: {e}")
+            logger.error(f"Gagal mengirim post edukasi pagi: {e}")
+
+async def post_education_afternoon(context: ContextTypes.DEFAULT_TYPE):
+    """Job untuk post edukasi siang."""
+    logger.info("Menjalankan job post edukasi siang...")
+    prompt = get_education_prompt("afternoon")
+    messages = [{"role": "system", "content": prompt}]
+    content = await generate_response(messages, temperature=0.8)
+    
+    if content and "Sori banget" not in content:
+        try:
+            await context.bot.send_message(chat_id=CHANNEL_ID, text=content, parse_mode='HTML')
+            logger.info("Edukasi siang berhasil di-post.")
+        except Exception as e:
+            logger.error(f"Gagal mengirim post edukasi siang: {e}")
 
 async def post_softsell(context: ContextTypes.DEFAULT_TYPE):
     """Job untuk post softsell."""
@@ -29,7 +43,7 @@ async def post_softsell(context: ContextTypes.DEFAULT_TYPE):
     
     if content and "Sori banget" not in content:
         try:
-            await context.bot.send_message(chat_id=CHANNEL_ID, text=content)
+            await context.bot.send_message(chat_id=CHANNEL_ID, text=content, parse_mode='HTML')
             logger.info("Softsell berhasil di-post.")
         except Exception as e:
             logger.error(f"Gagal mengirim post softsell: {e}")
@@ -43,7 +57,7 @@ async def post_motivation(context: ContextTypes.DEFAULT_TYPE):
     
     if content and "Sori banget" not in content:
         try:
-            await context.bot.send_message(chat_id=CHANNEL_ID, text=content)
+            await context.bot.send_message(chat_id=CHANNEL_ID, text=content, parse_mode='HTML')
             logger.info("Motivasi berhasil di-post.")
         except Exception as e:
             logger.error(f"Gagal mengirim post motivasi: {e}")

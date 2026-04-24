@@ -65,13 +65,13 @@ async def handle_group_message(update: Update, context: ContextTypes.DEFAULT_TYP
         # Kirim foto menggunakan file_id
         if message.photo:
             file_id = message.photo[-1].file_id
-            await context.bot.send_photo(chat_id=CHANNEL_ID, photo=file_id, caption=caption)
+            await context.bot.send_photo(chat_id=CHANNEL_ID, photo=file_id, caption=caption, parse_mode='HTML')
         elif message.video:
             file_id = message.video.file_id
-            await context.bot.send_video(chat_id=CHANNEL_ID, video=file_id, caption=caption)
+            await context.bot.send_video(chat_id=CHANNEL_ID, video=file_id, caption=caption, parse_mode='HTML')
         elif message.document:
             file_id = message.document.file_id
-            await context.bot.send_document(chat_id=CHANNEL_ID, document=file_id, caption=caption)
+            await context.bot.send_document(chat_id=CHANNEL_ID, document=file_id, caption=caption, parse_mode='HTML')
             
         logger.info(f"Berhasil meneruskan post dari {topic_name} ke channel.")
         

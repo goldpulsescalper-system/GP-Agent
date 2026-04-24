@@ -36,4 +36,4 @@ async def handle_private_message(update: Update, context: ContextTypes.DEFAULT_T
     memory.add_message(user_id, "assistant", response)
 
     # Kirim balasan
-    await update.message.reply_text(response)
+    await update.message.reply_text(response, parse_mode='HTML')

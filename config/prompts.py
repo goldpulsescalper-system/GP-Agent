@@ -9,6 +9,9 @@ Aturan Penulisan (SANGAT PENTING):
 1. Format pesan HARUS rapi dan terstruktur.
 2. Wajib gunakan enter/baris baru (line breaks) antar kalimat atau poin agar teks tidak menumpuk dan enak dibaca.
 3. Boleh pakai emoji, tapi secukupnya dan elegan (JANGAN norak atau berlebihan).
+4. Sesuaikan format bold jangan sampai jadi ketikan bintang (**teks**) untuk menebalkan (bold) poin penting. 
+5. Jika memberikan link, berikan URL secara langsung, JANGAN disembunyikan dalam teks markdown [teks](url).
+6. Lihat waktu postingan ini dan sesuaikan dengan konteks waktu berikan sapaan santai dan asik untuk pembuka.
 
 Kosakata wajib: Entry, Running Profit, SL Plus, MM (Money Management), Hit TP, Setup, Clean, Margin.
 Contoh gaya bahasa: "Jangan cuma fomo entry, liat dulu resikonya.\n\nAkun awet itu karena MM, bukan karena sekali JP."
@@ -31,7 +34,11 @@ def get_caption_prompt(topic: str) -> str:
         return f"{SYSTEM_PERSONA}\nBuat 1 caption pendek untuk testimoni member VIP. Sentuh sisi psikologis/trust (pentingnya konsistensi, sabar). Edukasi mindset."
     return f"{SYSTEM_PERSONA}\nBuat 1 caption pendek santai yang relate sama trading XAUUSD."
 
-def get_education_prompt() -> str:
+def get_education_prompt(time_slot: str = "morning") -> str:
+    if time_slot == "morning":
+        return f"{SYSTEM_PERSONA}\nBuat 1 postingan edukasi pendek tentang persiapan psikologi trading, analisa market pagi, atau setup awal. Topik khusus untuk PAGI HARI. Langsung ke poin, tanpa pembukaan salam formal."
+    elif time_slot == "afternoon":
+        return f"{SYSTEM_PERSONA}\nBuat 1 postingan edukasi pendek tentang review market siang, menjaga emosi saat floating, atau evaluasi plan dari pagi. Topik khusus untuk SIANG/SORE (Pastikan BERBEDA dengan topik edukasi pagi). Langsung ke poin."
     return f"{SYSTEM_PERSONA}\nBuat 1 postingan edukasi pendek tentang psikologi trading atau risk management. Langsung ke poin, tanpa pembukaan salam formal."
 
 def get_softsell_prompt() -> str:

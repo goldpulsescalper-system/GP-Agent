@@ -3,7 +3,7 @@ from datetime import time
 from pytz import timezone
 from telegram.ext import ApplicationBuilder, MessageHandler, filters
 from config.settings import TELEGRAM_TOKEN
-from core.scheduler import post_education, post_softsell, post_motivation
+from core.scheduler import post_education_morning, post_education_afternoon, post_softsell, post_motivation
 from handlers.private import handle_private_message
 from handlers.group import handle_group_message
 
@@ -36,9 +36,11 @@ def main():
     # Waktu (Asia/Jakarta)
     # Jadwal Konten (08:00, 13:00, 17:00, 20:00)
     
-    # 08:00 & 13:00 - Edukasi
-    job_queue.run_daily(post_education, time=time(hour=8, minute=0, tzinfo=timezone('Asia/Jakarta')))
-    job_queue.run_daily(post_education, time=time(hour=13, minute=0, tzinfo=timezone('Asia/Jakarta')))
+    # 08:00 - Edukasi Pagi
+    job_queue.run_daily(post_education_morning, time=time(hour=8, minute=0, tzinfo=timezone('Asia/Jakarta')))
+    
+    # 13:00 - Edukasi Siang
+    job_queue.run_daily(post_education_afternoon, time=time(hour=13, minute=0, tzinfo=timezone('Asia/Jakarta')))
 
     # 17:00 - Motivasi
     job_queue.run_daily(post_motivation, time=time(hour=17, minute=0, tzinfo=timezone('Asia/Jakarta')))
