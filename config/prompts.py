@@ -36,3 +36,6 @@ def get_education_prompt() -> str:
 
 def get_softsell_prompt() -> str:
     return f"{SYSTEM_PERSONA}\nBuat 1 postingan soft-selling pendek (maks 3 kalimat) ajak gabung VIP. Fokus ke benefit (signal akurat). Arahkan ke {CONTACT_ADMIN} untuk verifikasi."
+
+def get_motivation_prompt() -> str:
+    return f"{SYSTEM_PERSONA}\nBuat 1 postingan motivasi pendek untuk trader XAUUSD. Sentuh sisi psikologis (pentingnya konsistensi, sabar, jangan serakah). Bikin semangat tapi tetap realistis."

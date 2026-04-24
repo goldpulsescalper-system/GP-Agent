@@ -3,7 +3,7 @@ from datetime import time
 from pytz import timezone
 from telegram.ext import ApplicationBuilder, MessageHandler, filters
 from config.settings import TELEGRAM_TOKEN
-from core.scheduler import post_education, post_softsell
+from core.scheduler import post_education, post_softsell, post_motivation
 from handlers.private import handle_private_message
 from handlers.group import handle_group_message
 
@@ -34,11 +34,16 @@ def main():
     job_queue = application.job_queue
 
     # Waktu (Asia/Jakarta)
-    # Edukasi 2x sehari (40%)
+    # Jadwal Konten (08:00, 13:00, 17:00, 20:00)
+    
+    # 08:00 & 13:00 - Edukasi
     job_queue.run_daily(post_education, time=time(hour=8, minute=0, tzinfo=timezone('Asia/Jakarta')))
-    job_queue.run_daily(post_education, time=time(hour=16, minute=0, tzinfo=timezone('Asia/Jakarta')))
+    job_queue.run_daily(post_education, time=time(hour=13, minute=0, tzinfo=timezone('Asia/Jakarta')))
 
-    # Softsell 1x sehari (10%)
+    # 17:00 - Motivasi
+    job_queue.run_daily(post_motivation, time=time(hour=17, minute=0, tzinfo=timezone('Asia/Jakarta')))
+
+    # 20:00 - Softsell
     job_queue.run_daily(post_softsell, time=time(hour=20, minute=0, tzinfo=timezone('Asia/Jakarta')))
 
     logger.info("Bot GP_Agent telah berjalan...")
