@@ -20,6 +20,15 @@ async def handle_group_message(update: Update, context: ContextTypes.DEFAULT_TYP
 
     thread_id = message.message_thread_id
 
+    # DEBUG: log selalu thread_id yang diterima dari admin group
+    logger.info(
+        f"[DEBUG] Pesan masuk dari admin group | chat_id={message.chat.id} | "
+        f"thread_id={thread_id} | "
+        f"TOPIC_HASIL_TRADING_ID={TOPIC_HASIL_TRADING_ID} | "
+        f"TOPIC_TESTIMONI_ID={TOPIC_TESTIMONI_ID} | "
+        f"TOPIC_LAINNYA_ID={TOPIC_LAINNYA_ID}"
+    )
+
     # Tentukan topik berdasarkan thread
     topic_name = None
     if thread_id == TOPIC_HASIL_TRADING_ID:
@@ -29,7 +38,16 @@ async def handle_group_message(update: Update, context: ContextTypes.DEFAULT_TYP
     elif thread_id == TOPIC_LAINNYA_ID:
         topic_name = "lainnya"
     else:
-        # Topik lain atau general thread — skip
+        # Thread tidak dikenali — kirim notif debug ke admin agar tau ID-nya
+        logger.warning(f"[AutoPost] Thread ID tidak dikenali: {thread_id}. Pesan diabaikan.")
+        await message.reply_text(
+            f"⚠️ <b>Debug Info</b>\n\n"
+            f"Thread ID ini <b>tidak terdaftar</b> di konfigurasi bot.\n\n"
+            f"<b>Thread ID sekarang:</b> <code>{thread_id}</code>\n\n"
+            f"Salin angka di atas dan update <code>TOPIC_LAINNYA_ID</code> (atau topik yang sesuai) "
+            f"di Railway → Variables.",
+            parse_mode='HTML'
+        )
         return
 
     # Tentukan tipe konten
