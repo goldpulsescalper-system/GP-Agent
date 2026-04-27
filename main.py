@@ -27,8 +27,11 @@ def main():
     application.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.TEXT & (~filters.COMMAND), handle_private_message))
     
     # Handler untuk group message -> Monitoring Topik & Auto-Post
-    # Kita menggunakan filters.ChatType.GROUPS (termasuk SUPERGROUP) dan mengecek media
-    application.add_handler(MessageHandler(filters.ChatType.GROUPS & (filters.PHOTO | filters.VIDEO | filters.Document.ALL), handle_group_message))
+    # Support: foto, video, dokumen, dan teks murni dari admin group
+    group_content_filter = (
+        filters.PHOTO | filters.VIDEO | filters.Document.ALL | filters.TEXT
+    )
+    application.add_handler(MessageHandler(filters.ChatType.GROUPS & group_content_filter, handle_group_message))
 
     # Setup APScheduler Jobs
     job_queue = application.job_queue

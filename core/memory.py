@@ -4,7 +4,7 @@ class Memory:
     def __init__(self):
         # Menyimpan history chat DM per user: {user_id: [ {"role": "user", "content": "..."}, ... ]}
         self.user_chats = {}
-        # Menyimpan last post time untuk mencegah spam channel (kurang dari 2 jam)
+        # Tracking topik terakhir yang diposting (untuk logging, bukan untuk block)
         self.last_channel_post_time = None
         self.last_topic_posted = None
 
@@ -19,10 +19,8 @@ class Memory:
         return self.user_chats.get(user_id, [])
 
     def can_post_to_channel(self) -> bool:
-        if not self.last_channel_post_time:
-            return True
-        diff = (datetime.now() - self.last_channel_post_time).total_seconds()
-        return diff >= 7200  # 2 jam
+        """Selalu True — tidak ada rate limit. Bot langsung proses setiap konten."""
+        return True
 
     def update_post_history(self, topic: str):
         self.last_channel_post_time = datetime.now()
