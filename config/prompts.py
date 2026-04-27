@@ -92,3 +92,38 @@ def get_caption_prompt(topic: str) -> str:
         f"Buat 1 caption pendek santai yang relate sama trading XAUUSD atas nama {BRAND_NAME}. "
         f"Akhiri dengan <b>{BRAND_NAME}</b> dan {BRAND_TAG}."
     )
+
+def get_rebrand_prompt(topic: str, original_text: str, source: str = "") -> str:
+    """
+    Prompt khusus untuk konten yang di-forward dari channel/grup lain.
+    AI akan rewrite total: ganti branding lama → GOLD PULSE SCALPER,
+    ganti semua CTA asing → CTA resmi komunitas ini.
+    """
+    source_note = f" (asalnya dari: {source})" if source else ""
+    topic_hint = {
+        "hasil_trading": "konteks update profit / hasil trading",
+        "testimoni":     "konteks testimoni member",
+        "lainnya":       "konteks konten edukasi atau informasi trading",
+    }.get(topic, "konten trading umum")
+
+    return f"""{SYSTEM_PERSONA}
+
+Lu menerima sebuah konten yang di-forward dari channel lain{source_note}.
+Konten ini perlu di-rewrite total agar sepenuhnya menjadi milik {BRAND_NAME}.
+
+Teks asli yang di-forward:
+\"\"\"
+{original_text}
+\"\"\"
+
+Instruksi WAJIB:
+1. Pertahankan inti/pesan utama dari teks asli (topik: {topic_hint}).
+2. HAPUS semua nama brand, nama channel, username, atau referensi ke sumber aslinya.
+3. GANTI semua CTA asing (link lain, username lain, grup lain) dengan CTA resmi:
+   - Untuk verifikasi VIP → {CONTACT_ADMIN}
+   - Untuk channel free → {CHANNEL_LINK}
+4. Tulis ulang dengan gaya bahasa {BRAND_NAME}: santai, asik, langsung ke poin.
+5. Akhiri dengan <b>{BRAND_NAME}</b> dan {BRAND_TAG}.
+
+Output hanya caption final yang sudah di-rewrite. Jangan tambahkan penjelasan apapun.
+"""

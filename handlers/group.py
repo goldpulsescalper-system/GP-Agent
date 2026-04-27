@@ -2,7 +2,7 @@ import logging
 from telegram import Update
 from telegram.ext import ContextTypes
 from config.settings import ADMIN_GROUP_ID, CHANNEL_ID, TOPIC_HASIL_TRADING_ID, TOPIC_TESTIMONI_ID, TOPIC_LAINNYA_ID
-from config.prompts import get_caption_prompt
+from config.prompts import get_caption_prompt, get_rebrand_prompt
 from core.ai import generate_response
 from core.memory import memory
 
@@ -61,10 +61,31 @@ async def handle_group_message(update: Update, context: ContextTypes.DEFAULT_TYP
     if not has_media and not has_text:
         return
 
-    # Ambil teks referensi (bila ada) untuk dimasukkan ke prompt
+    # Ambil teks referensi (caption/teks yang ada di pesan)
     admin_text = (message.caption or message.text or "").strip()
 
-    logger.info(f"[AutoPost] Topik: {topic_name} | Media: {has_media} | Teks: {bool(admin_text)}")
+    # ── DETEKSI FORWARD ────────────────────────────────────────────────────────
+    # Pesan forward dari channel/grup lain → wajib re-brand + ganti CTA
+    is_forwarded = bool(
+        message.forward_origin or          # API baru (PTB v20+)
+        message.forward_from_chat or       # forward dari channel/grup
+        message.forward_from or            # forward dari user/bot
+        message.forward_sender_name        # forward dari akun privat
+    )
+
+    # Nama sumber forward (untuk log)
+    forward_source = ""
+    if message.forward_from_chat:
+        forward_source = message.forward_from_chat.title or str(message.forward_from_chat.id)
+    elif message.forward_from:
+        forward_source = message.forward_from.username or message.forward_from.first_name
+    elif message.forward_sender_name:
+        forward_source = message.forward_sender_name
+
+    logger.info(
+        f"[AutoPost] Topik: {topic_name} | Media: {has_media} | "
+        f"Forwarded: {is_forwarded} (dari: {forward_source or '-'}) | Teks: {bool(admin_text)}"
+    )
 
     # Tampilkan status typing ke grup admin
     await context.bot.send_chat_action(
@@ -73,16 +94,25 @@ async def handle_group_message(update: Update, context: ContextTypes.DEFAULT_TYP
         message_thread_id=thread_id
     )
 
-    # Bangun prompt — sertakan materi dari admin kalau ada
-    base_prompt = get_caption_prompt(topic_name)
-    if admin_text:
+    # ── BANGUN PROMPT ──────────────────────────────────────────────────────────
+    if is_forwarded and admin_text:
+        # Konten forward → re-brand total + ganti CTA
+        prompt = get_rebrand_prompt(topic_name, original_text=admin_text, source=forward_source)
+    elif is_forwarded and not admin_text:
+        # Forward tapi tidak ada teks (misal: foto saja tanpa caption dari channel lain)
+        # Treat seperti biasa, generate caption fresh
+        prompt = get_caption_prompt(topic_name)
+    elif admin_text:
+        # Bukan forward tapi ada teks admin → jadikan konteks
+        base_prompt = get_caption_prompt(topic_name)
         prompt = (
             f"{base_prompt}\n\n"
-            f"Admin sudah menyiapkan materi / konteks berikut — gunakan ini sebagai acuan atau perkuat dengan caption yang lebih menarik:\n"
+            f"Admin sudah menyiapkan materi/konteks berikut — gunakan sebagai acuan:\n"
             f"\"{admin_text}\""
         )
     else:
-        prompt = base_prompt
+        # Tidak ada teks sama sekali → generate fresh
+        prompt = get_caption_prompt(topic_name)
 
     messages = [{"role": "system", "content": prompt}]
     caption = await generate_response(messages, temperature=0.85)
@@ -125,13 +155,14 @@ async def handle_group_message(update: Update, context: ContextTypes.DEFAULT_TYP
                 parse_mode='HTML'
             )
 
-        logger.info(f"[AutoPost] ✅ Berhasil dikirim ke channel dari topik '{topic_name}'.")
+        logger.info(f"[AutoPost] ✅ Berhasil dikirim ke channel dari topik '{topic_name}' (forward={is_forwarded}).")
         memory.update_post_history(topic_name)
 
-        # Preview singkat caption ke admin sebagai konfirmasi
+        # Konfirmasi ke admin — label beda untuk forward vs normal
+        label = "🔄 Re-brand & post" if is_forwarded else "✅ Berhasil dipost"
         preview = caption[:200] + ("..." if len(caption) > 200 else "")
         await message.reply_text(
-            f"✅ Berhasil dipost ke channel!\n\n<b>Preview caption:</b>\n{preview}",
+            f"{label} ke channel!\n\n<b>Preview caption:</b>\n{preview}",
             parse_mode='HTML'
         )
 
