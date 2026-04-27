@@ -4,7 +4,7 @@ from pytz import timezone
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 from config.settings import TELEGRAM_TOKEN, ADMIN_GROUP_ID
-from core.scheduler import post_education_morning, post_education_afternoon, post_softsell, post_motivation
+from core.scheduler import post_morning, post_night
 from handlers.private import handle_private_message
 from handlers.group import handle_group_message
 
@@ -50,23 +50,15 @@ def main():
     )
     application.add_handler(MessageHandler(filters.ChatType.GROUPS & group_content_filter, handle_group_message), group=1)
 
-    # Setup APScheduler Jobs
+    # Setup APScheduler Jobs (Asia/Jakarta)
     job_queue = application.job_queue
+    wib = timezone('Asia/Jakarta')
 
-    # Waktu (Asia/Jakarta)
-    # Jadwal Konten (08:00, 13:00, 17:00, 20:00)
-    
-    # 08:00 - Edukasi Pagi
-    job_queue.run_daily(post_education_morning, time=time(hour=8, minute=0, tzinfo=timezone('Asia/Jakarta')))
-    
-    # 13:00 - Edukasi Siang
-    job_queue.run_daily(post_education_afternoon, time=time(hour=13, minute=0, tzinfo=timezone('Asia/Jakarta')))
+    # 07:30 — Sapaan pagi + motivasi + soft-sell
+    job_queue.run_daily(post_morning, time=time(hour=7, minute=30, tzinfo=wib))
 
-    # 17:00 - Motivasi
-    job_queue.run_daily(post_motivation, time=time(hour=17, minute=0, tzinfo=timezone('Asia/Jakarta')))
-
-    # 20:00 - Softsell
-    job_queue.run_daily(post_softsell, time=time(hour=20, minute=0, tzinfo=timezone('Asia/Jakarta')))
+    # 20:00 — Sapaan malam + hard-sell psikologi persuasif
+    job_queue.run_daily(post_night, time=time(hour=20, minute=0, tzinfo=wib))
 
     logger.info("Bot GP_Agent telah berjalan...")
 
