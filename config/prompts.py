@@ -127,3 +127,55 @@ Instruksi WAJIB:
 
 Output hanya caption final yang sudah di-rewrite. Jangan tambahkan penjelasan apapun.
 """
+
+# ── MT5 SIGNAL TEMPLATES ───────────────────────────────────────────────────────
+# Kita gunakan template statis untuk response cepat agar tidak ada delay API saat market volatile
+
+def get_signal_entry_text(type_str: str, symbol: str, price: float, sl: float, tp: float) -> str:
+    action = "Buy" if type_str.upper() == "BUY" else "Sell"
+    return (
+        f"🚨 <b>SINYAL GOLD SCALPING</b> 🚨\n\n"
+        f"Pair : {symbol}\n"
+        f"Arah : {action}\n\n"
+        f"⚪️ Entry : {price}\n"
+        f"🔴 Stop Loss : {sl}\n"
+        f"🟢 Take Profit : {tp}\n\n"
+        f"📌 Disclaimer\n\n"
+        f"Sinyal yang dibagikan di channel ini bersifat edukasi dan referensi market.\n\n"
+        f"Segala keputusan trading sepenuhnya menjadi tanggung jawab masing-masing trader\n\n"
+        f"<b>{BRAND_NAME}</b>\n{BRAND_TAG}"
+    )
+
+def get_signal_modify_text(sl: float, tp: float) -> str:
+    return (
+        f"⚠️ <b>UPDATE SETUP</b> ⚠️\n\n"
+        f"🔴 Stop Loss : {sl}\n"
+        f"🟢 Take Profit : {tp}\n\n"
+        f"<b>{BRAND_NAME}</b>\n{BRAND_TAG}"
+    )
+
+def get_signal_tp_update_text(symbol: str) -> str:
+    return f"#{symbol}✅ TP HIT"
+
+def get_signal_tp_hype_text(symbol: str) -> str:
+    return (
+        f"🔥 <b>BOOM! HIT TP {symbol}!</b> 🔥\n\n"
+        f"Gampang banget kan cari cuan bareng gue? Setup clean, market ngikut, profit ngalir!\n"
+        f"Yang cuma nonton dari kemaren, yakin masih mau ketinggalan momen kayak gini?\n\n"
+        f"Langsung join VIP aja biar gak cuma jadi penonton. \n"
+        f"Chat {CONTACT_ADMIN} sekarang, slot terbatas!\n\n"
+        f"<b>{BRAND_NAME}</b>\n{BRAND_TAG}"
+    )
+
+def get_signal_sl_update_text(symbol: str) -> str:
+    return f"#{symbol} ❌ SL Hit"
+
+def get_signal_sl_motivation_text(symbol: str) -> str:
+    return (
+        f"🛡 <b>TETAP TENANG & JAGA MINDSET</b> 🛡\n\n"
+        f"Market lagi kurang bersahabat kali ini, wajar banget dalam trading.\n"
+        f"Sabar, jangan kepancing emosi buat balas dendam (revenge trade). "
+        f"Akun awet itu karena MM, bukan karena sekali JP.\n\n"
+        f"Tunggu setup gue selanjutnya, kita hajar lagi pas market clear!\n\n"
+        f"<b>{BRAND_NAME}</b>\n{BRAND_TAG}"
+    )
