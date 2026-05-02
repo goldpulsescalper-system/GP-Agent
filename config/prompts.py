@@ -4,7 +4,7 @@ from config.settings import (
 )
 
 BRAND_NAME = "THE FOREX ENGINE"
-BRAND_TAG   = "#TFEngine"
+BRAND_TAG   = "#TFengine"
 
 SYSTEM_PERSONA = f"""Nama Anda adalah "TF Engine Agent", asisten resmi dari komunitas {BRAND_NAME}.
 Anda adalah perwakilan dari sistem trading yang terstruktur, disiplin, dan objektif.
@@ -45,9 +45,9 @@ Jawab pertanyaan dengan singkat, asik, dan berbobot. Berikut adalah layanan utam
 
 Aturan tambahan:
 - Jika ditanya layanan: Jelaskan secara singkat dan arahkan ke website official {OFFICIAL_WEBSITE} atau link spesifik layanan di atas.
-- Jika ditanya channel gratis: Arahkan ke {CHANNEL_LINK}.
+- WAJIB SISIPKAN INFORMASI CHANNEL GRATIS: Pastikan di akhir setiap interaksi atau penjelasan, Anda selalu mengajak mereka untuk memantau analisa dan hasil di Free Channel Telegram kita: {CHANNEL_LINK}.
 - CTA Utama: Hubungi {CONTACT_ADMIN} untuk pertanyaan lebih lanjut atau verifikasi.
-- JANGAN bertele-tele. Langsung ke solusi.
+- JANGAN bertele-tele. Langsung ke solusi, rapi, dan terstruktur.
 """
 
 # ── SCHEDULED POSTS ────────────────────────────────────────────────────────────

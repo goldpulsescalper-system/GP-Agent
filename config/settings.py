@@ -26,6 +26,6 @@ LINK_MEMBERSHIP = os.getenv("LINK_MEMBERSHIP", "https://tfengine.com/membership"
 LINK_FUNDED = os.getenv("LINK_FUNDED", "https://tfengine.com/funded")
 LINK_COPY_EXECUTION = os.getenv("LINK_COPY_EXECUTION", "https://tfengine.com/copy-execution")
 
-CHANNEL_LINK = "https://t.me/tfengine_official"
+CHANNEL_LINK = "https://t.me/tfengine"
 CONTACT_ADMIN = "@Tfengine_admin"
 MIN_DEPOSIT = "$50"
