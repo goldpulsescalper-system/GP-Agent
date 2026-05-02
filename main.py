@@ -1,15 +1,21 @@
 import logging
-from contextlib import asynccontextmanager
-from datetime import time
-from pytz import timezone
 import os
+import asyncio
+from contextlib import asynccontextmanager
+from pytz import timezone
+
+# Fix for Pyrogram RuntimeError: There is no current event loop in thread 'MainThread'
+try:
+    asyncio.get_running_loop()
+except RuntimeError:
+    asyncio.set_event_loop(asyncio.new_event_loop())
 
 import uvicorn
 from fastapi import FastAPI
-from telegram import Update
-from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
+from pyrogram import Client, filters
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from config.settings import TELEGRAM_TOKEN, ADMIN_GROUP_ID
+from config.settings import API_ID, API_HASH, SESSION_STRING, ADMIN_GROUP_ID
 from core.scheduler import post_morning, post_night
 from handlers.private import handle_private_message
 from handlers.group import handle_group_message
@@ -22,65 +28,58 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-async def diagnostic_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Catch-all diagnostic: log setiap pesan yang masuk ke bot."""
-    msg = update.message
-    if not msg:
-        return
+# Initialize Pyrogram Client
+if SESSION_STRING:
+    telegram_client = Client("my_account", api_id=API_ID, api_hash=API_HASH, session_string=SESSION_STRING)
+else:
+    # Jika tidak ada session_string, ia akan membuat file my_account.session dan meminta login interaktif
+    telegram_client = Client("my_account", api_id=API_ID, api_hash=API_HASH)
+
+# Register Handlers
+@telegram_client.on_message(filters.private & filters.text & ~filters.command(["start", "help"]))
+async def private_handler(client, message):
+    await handle_private_message(client, message)
+
+@telegram_client.on_message(filters.chat(ADMIN_GROUP_ID) & (filters.photo | filters.video | filters.document | filters.text))
+async def group_handler(client, message):
+    await handle_group_message(client, message)
+
+# Optional Diagnostic Handler (Catch all in Admin Group)
+@telegram_client.on_message(filters.chat(ADMIN_GROUP_ID), group=-1)
+async def diagnostic_handler(client, message):
     logger.info(
-        f"[DIAGNOSTIC] chat_id={msg.chat.id} | chat_type={msg.chat.type} | "
-        f"thread_id={msg.message_thread_id} | "
-        f"has_text={bool(msg.text)} | has_photo={bool(msg.photo)} | "
-        f"has_doc={bool(msg.document)} | ADMIN_GROUP_ID={ADMIN_GROUP_ID}"
+        f"[DIAGNOSTIC] chat_id={message.chat.id} | chat_type={message.chat.type} | "
+        f"thread_id={message.message_thread_id} | "
+        f"has_text={bool(message.text)} | has_photo={bool(message.photo)} | "
+        f"has_doc={bool(message.document)} | ADMIN_GROUP_ID={ADMIN_GROUP_ID}"
     )
 
-telegram_app = None
+scheduler = AsyncIOScheduler(timezone=timezone('Asia/Jakarta'))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global telegram_app
-    if not TELEGRAM_TOKEN:
-        logger.error("TELEGRAM_TOKEN tidak ditemukan di .env!")
+    if not API_ID or not API_HASH:
+        logger.error("API_ID atau API_HASH tidak ditemukan di .env!")
         yield
         return
 
-    # Inisialisasi bot dengan Job Queue
-    telegram_app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
-    
-    # Store bot in app state so FastAPI routes can access it
-    app.state.bot = telegram_app.bot
+    # Start Pyrogram Client
+    await telegram_client.start()
+    app.state.bot = telegram_client
+    logger.info("Userbot TF Engine telah berjalan...")
 
-    # Daftarkan Handlers
-    telegram_app.add_handler(MessageHandler(filters.ALL, diagnostic_handler), group=0)
-    telegram_app.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.TEXT & (~filters.COMMAND), handle_private_message), group=1)
+    # Setup APScheduler
+    scheduler.add_job(post_morning, 'cron', hour=7, minute=30, args=[telegram_client])
+    scheduler.add_job(post_night, 'cron', hour=20, minute=0, args=[telegram_client])
+    scheduler.start()
+    logger.info("Scheduler telah dijalankan.")
 
-    group_content_filter = (
-        filters.PHOTO | filters.VIDEO | filters.Document.ALL | filters.TEXT
-    )
-    telegram_app.add_handler(MessageHandler(filters.ChatType.GROUPS & group_content_filter, handle_group_message), group=1)
-
-    # Setup APScheduler Jobs (Asia/Jakarta)
-    job_queue = telegram_app.job_queue
-    wib = timezone('Asia/Jakarta')
-    job_queue.run_daily(post_morning, time=time(hour=7, minute=30, tzinfo=wib))
-    job_queue.run_daily(post_night, time=time(hour=20, minute=0, tzinfo=wib))
-
-    # Initialize and start the Telegram Bot
-    await telegram_app.initialize()
-    await telegram_app.start()
-    await telegram_app.updater.start_polling(
-        allowed_updates=["message", "edited_message", "channel_post", "callback_query"]
-    )
-    logger.info("Bot GP_Agent telah berjalan bersama FastAPI webhook server...")
-    
     yield
     
     # Shutdown sequence
-    if telegram_app:
-        logger.info("Mematikan bot GP_Agent...")
-        await telegram_app.updater.stop()
-        await telegram_app.stop()
-        await telegram_app.shutdown()
+    logger.info("Mematikan Userbot TF Engine...")
+    scheduler.shutdown()
+    await telegram_client.stop()
 
 # Initialize FastAPI App
 api_app = FastAPI(lifespan=lifespan)

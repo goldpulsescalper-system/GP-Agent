@@ -16,11 +16,11 @@ class MT5Payload(BaseModel):
 
 @router.post("/webhook/mt5")
 async def mt5_webhook(payload: MT5Payload, request: Request):
-    bot = getattr(request.app.state, "bot", None)
-    if not bot:
-        raise HTTPException(status_code=500, detail="Bot instance not initialized in app state")
+    client = getattr(request.app.state, "bot", None)
+    if not client:
+        raise HTTPException(status_code=500, detail="Pyrogram Client not initialized in app state")
     
-    # Process signal in background or await directly (await is fine for simple messages)
-    await process_mt5_signal(bot, payload.model_dump())
+    # Process signal in background or await directly
+    await process_mt5_signal(client, payload.model_dump())
     
     return {"status": "success"}

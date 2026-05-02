@@ -1,6 +1,7 @@
 import logging
-from telegram import Update
-from telegram.ext import ContextTypes
+from pyrogram import Client
+from pyrogram.types import Message
+from pyrogram.enums import ParseMode
 from config.settings import (
     ADMIN_GROUP_ID, CHANNEL_ID,
     TOPIC_HASIL_TRADING_ID, TOPIC_TESTIMONI_ID, TOPIC_LAINNYA_ID
@@ -11,65 +12,31 @@ from core.memory import memory
 
 logger = logging.getLogger(__name__)
 
-
-def _detect_forward(message) -> tuple[bool, str]:
+def _detect_forward(message: Message) -> tuple[bool, str]:
     """
     Deteksi apakah pesan adalah forward dan dari mana asalnya.
-    Kompatibel dengan PTB v20 dan v21 (Telegram Bot API 6+ & 7+).
+    Kompatibel dengan Pyrogram Message object.
     Mengembalikan (is_forwarded: bool, source_name: str).
     """
-    # --- PTB v21 / Bot API 7.0+ ---
-    try:
-        origin = getattr(message, "forward_origin", None)
-        if origin is not None:
-            # origin bisa bertipe MessageOriginChannel, MessageOriginUser, dll.
-            source = ""
-            chat = getattr(origin, "chat", None)
-            if chat:
-                source = getattr(chat, "title", "") or str(getattr(chat, "id", ""))
-            sender = getattr(origin, "sender_user", None)
-            if not source and sender:
-                source = getattr(sender, "username", "") or getattr(sender, "first_name", "")
-            sender_name = getattr(origin, "sender_user_name", None)
-            if not source and sender_name:
-                source = sender_name
-            return True, source
-    except Exception:
-        pass
-
-    # --- PTB v20 / Bot API < 7.0 (fallback) ---
-    try:
-        if getattr(message, "forward_from_chat", None):
-            chat = message.forward_from_chat
-            source = getattr(chat, "title", "") or str(getattr(chat, "id", ""))
-            return True, source
-        if getattr(message, "forward_from", None):
-            u = message.forward_from
-            source = getattr(u, "username", "") or getattr(u, "first_name", "")
-            return True, source
-        if getattr(message, "forward_sender_name", None):
-            return True, message.forward_sender_name
-        # Cek field tambahan untuk forward dari channel tanpa username
-        if getattr(message, "forward_date", None):
-            return True, "channel tidak diketahui"
-    except Exception:
-        pass
-
+    if message.forward_date:
+        source = ""
+        if message.forward_from_chat:
+            source = message.forward_from_chat.title or str(message.forward_from_chat.id)
+        elif message.forward_from:
+            source = message.forward_from.username or message.forward_from.first_name
+        elif message.forward_sender_name:
+            source = message.forward_sender_name
+        return True, source
     return False, ""
 
 
-async def handle_group_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_group_message(client: Client, message: Message):
     """
     Menangani pesan dari grup admin (topik).
     Support: teks murni, foto, video, dokumen, dan forward dari channel lain.
     Seluruh handler dibungkus try-except agar tidak pernah diam/crash tanpa laporan.
     """
     try:
-        message = update.message
-        if not message:
-            logger.warning("[AutoPost] update.message is None, skip.")
-            return
-
         # ── 1. VALIDASI CHAT ────────────────────────────────────────────────────
         chat_id = message.chat.id
         if chat_id != ADMIN_GROUP_ID:
@@ -94,14 +61,14 @@ async def handle_group_message(update: Update, context: ContextTypes.DEFAULT_TYP
         else:
             logger.warning(f"[AutoPost] thread_id={thread_id} tidak dikenal, kirim debug info.")
             await message.reply_text(
-                f"⚠️ <b>Debug Info</b>\n\n"
-                f"Thread ID <code>{thread_id}</code> belum terdaftar.\n\n"
-                f"<b>Konfigurasi saat ini:</b>\n"
-                f"• HASIL_TRADING = <code>{TOPIC_HASIL_TRADING_ID}</code>\n"
-                f"• TESTIMONI = <code>{TOPIC_TESTIMONI_ID}</code>\n"
-                f"• LAINNYA = <code>{TOPIC_LAINNYA_ID}</code>\n\n"
+                f"⚠️ **Debug Info**\n\n"
+                f"Thread ID `{thread_id}` belum terdaftar.\n\n"
+                f"**Konfigurasi saat ini:**\n"
+                f"• HASIL_TRADING = `{TOPIC_HASIL_TRADING_ID}`\n"
+                f"• TESTIMONI = `{TOPIC_TESTIMONI_ID}`\n"
+                f"• LAINNYA = `{TOPIC_LAINNYA_ID}`\n\n"
                 f"Update nilai yang sesuai di Railway → Variables.",
-                parse_mode='HTML'
+                parse_mode=ParseMode.MARKDOWN
             )
             return
 
@@ -127,15 +94,12 @@ async def handle_group_message(update: Update, context: ContextTypes.DEFAULT_TYP
             f"teks={bool(admin_text)} | forward={is_forwarded} (src={forward_source or '-'})"
         )
 
-        # Kirim sinyal typing ke grup admin
+        # Kirim sinyal typing ke grup admin (Pyrogram enums/string tidak strict)
+        # Di userbot mungkin tidak bisa kirim chat_action di group
         try:
-            await context.bot.send_chat_action(
-                chat_id=ADMIN_GROUP_ID,
-                action='typing',
-                message_thread_id=thread_id
-            )
+            pass # userbot rarely uses chat actions in groups
         except Exception:
-            pass  # Typing action tidak krusial
+            pass  
 
         # ── 5. BANGUN PROMPT ────────────────────────────────────────────────────
         if is_forwarded and admin_text:
@@ -165,26 +129,26 @@ async def handle_group_message(update: Update, context: ContextTypes.DEFAULT_TYP
 
         # ── 7. POST KE CHANNEL ──────────────────────────────────────────────────
         if has_photo:
-            file_id = message.photo[-1].file_id
-            await context.bot.send_photo(
+            file_id = message.photo.file_id
+            await client.send_photo(
                 chat_id=CHANNEL_ID, photo=file_id,
-                caption=caption, parse_mode='HTML'
+                caption=caption, parse_mode=ParseMode.HTML
             )
         elif has_video:
             file_id = message.video.file_id
-            await context.bot.send_video(
+            await client.send_video(
                 chat_id=CHANNEL_ID, video=file_id,
-                caption=caption, parse_mode='HTML'
+                caption=caption, parse_mode=ParseMode.HTML
             )
         elif has_document:
             file_id = message.document.file_id
-            await context.bot.send_document(
+            await client.send_document(
                 chat_id=CHANNEL_ID, document=file_id,
-                caption=caption, parse_mode='HTML'
+                caption=caption, parse_mode=ParseMode.HTML
             )
         else:
-            await context.bot.send_message(
-                chat_id=CHANNEL_ID, text=caption, parse_mode='HTML'
+            await client.send_message(
+                chat_id=CHANNEL_ID, text=caption, parse_mode=ParseMode.HTML
             )
 
         memory.update_post_history(topic_name)
@@ -195,16 +159,16 @@ async def handle_group_message(update: Update, context: ContextTypes.DEFAULT_TYP
         preview = caption[:220] + ("..." if len(caption) > 220 else "")
         await message.reply_text(
             f"{label} ke channel!\n\n<b>Preview:</b>\n{preview}",
-            parse_mode='HTML'
+            parse_mode=ParseMode.HTML
         )
 
     except Exception as e:
         # Handler level error — selalu laporkan ke admin group
         logger.error(f"[AutoPost] ERROR tidak tertangani: {e}", exc_info=True)
         try:
-            await update.message.reply_text(
-                f"❌ <b>Error tidak terduga:</b>\n<code>{e}</code>\n\nCek Railway logs untuk detail.",
-                parse_mode='HTML'
+            await message.reply_text(
+                f"❌ <b>Error tidak terduga:</b>\n<code>{e}</code>\n\nCek logs untuk detail.",
+                parse_mode=ParseMode.HTML
             )
         except Exception:
             pass

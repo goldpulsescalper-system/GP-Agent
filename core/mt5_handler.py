@@ -1,6 +1,6 @@
 import logging
-from telegram import Bot
-from telegram.constants import ParseMode
+from pyrogram import Client
+from pyrogram.enums import ParseMode
 from config.settings import CHANNEL_ID
 from core.db import get_signal_message_id, save_signal_message_id
 from config.prompts import (
@@ -14,7 +14,7 @@ from config.prompts import (
 
 logger = logging.getLogger(__name__)
 
-async def process_mt5_signal(bot: Bot, payload: dict):
+async def process_mt5_signal(client: Client, payload: dict):
     """
     Memproses payload webhook dari MT5 dan mengirim/membalas pesan di Channel.
     """
@@ -35,15 +35,15 @@ async def process_mt5_signal(bot: Bot, payload: dict):
     try:
         if action == "ENTRY":
             text = get_signal_entry_text(type_str, symbol, price, sl, tp)
-            message = await bot.send_message(
+            message = await client.send_message(
                 chat_id=CHANNEL_ID,
                 text=text,
                 parse_mode=ParseMode.HTML,
                 disable_web_page_preview=True
             )
             # Simpan message_id untuk reply nanti
-            save_signal_message_id(ticket, message.message_id)
-            logger.info(f"ENTRY Signal sent. Message ID: {message.message_id}")
+            save_signal_message_id(ticket, message.id)
+            logger.info(f"ENTRY Signal sent. Message ID: {message.id}")
 
         elif action == "MODIFY":
             message_id = get_signal_message_id(ticket)
@@ -52,7 +52,7 @@ async def process_mt5_signal(bot: Bot, payload: dict):
                 return
             
             text = get_signal_modify_text(sl, tp)
-            await bot.send_message(
+            await client.send_message(
                 chat_id=CHANNEL_ID,
                 text=text,
                 parse_mode=ParseMode.HTML,
@@ -69,7 +69,7 @@ async def process_mt5_signal(bot: Bot, payload: dict):
             
             # 1. Update text (Reply to signal)
             update_text = get_signal_tp_update_text(symbol)
-            await bot.send_message(
+            await client.send_message(
                 chat_id=CHANNEL_ID,
                 text=update_text,
                 parse_mode=ParseMode.HTML,
@@ -79,7 +79,7 @@ async def process_mt5_signal(bot: Bot, payload: dict):
             
             # 2. Hype / CTA text (New message)
             hype_text = get_signal_tp_hype_text(symbol)
-            await bot.send_message(
+            await client.send_message(
                 chat_id=CHANNEL_ID,
                 text=hype_text,
                 parse_mode=ParseMode.HTML,
@@ -95,7 +95,7 @@ async def process_mt5_signal(bot: Bot, payload: dict):
             
             # 1. Update text (Reply to signal)
             update_text = get_signal_sl_update_text(symbol)
-            await bot.send_message(
+            await client.send_message(
                 chat_id=CHANNEL_ID,
                 text=update_text,
                 parse_mode=ParseMode.HTML,
@@ -105,7 +105,7 @@ async def process_mt5_signal(bot: Bot, payload: dict):
             
             # 2. Motivation text (New message)
             motivation_text = get_signal_sl_motivation_text(symbol)
-            await bot.send_message(
+            await client.send_message(
                 chat_id=CHANNEL_ID,
                 text=motivation_text,
                 parse_mode=ParseMode.HTML,

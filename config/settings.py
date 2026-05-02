@@ -4,7 +4,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Telegram Config
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
+API_ID = int(os.getenv("API_ID", "0"))
+API_HASH = os.getenv("API_HASH", "")
+SESSION_STRING = os.getenv("SESSION_STRING", "")
 ADMIN_GROUP_ID = int(os.getenv("ADMIN_GROUP_ID", "0"))
 CHANNEL_ID = int(os.getenv("CHANNEL_ID", "0"))
 
@@ -19,7 +21,11 @@ AI_BASE_URL = "https://ai.sumopod.com/v1/"
 AI_MODEL = "gpt-4o"
 
 # Konstanta
-AFFILIATE_LINK = os.getenv("AFFILIATE_LINK", "https://broker.link/affiliate")
-CHANNEL_LINK = "https://t.me/goldpulsescalper"
-CONTACT_ADMIN = "@GP_Scalper"
+OFFICIAL_WEBSITE = os.getenv("OFFICIAL_WEBSITE", "https://tfengine.com")
+LINK_MEMBERSHIP = os.getenv("LINK_MEMBERSHIP", "https://tfengine.com/membership")
+LINK_FUNDED = os.getenv("LINK_FUNDED", "https://tfengine.com/funded")
+LINK_COPY_EXECUTION = os.getenv("LINK_COPY_EXECUTION", "https://tfengine.com/copy-execution")
+
+CHANNEL_LINK = "https://t.me/tfengine_official"
+CONTACT_ADMIN = "@Tfengine_admin"
 MIN_DEPOSIT = "$50"
