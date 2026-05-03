@@ -15,10 +15,9 @@ from fastapi import FastAPI
 from pyrogram import Client, filters
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from config.settings import API_ID, API_HASH, SESSION_STRING, ADMIN_GROUP_ID
+from config.settings import API_ID, API_HASH, SESSION_STRING
 from core.scheduler import post_morning, post_night
 from handlers.private import handle_private_message
-from handlers.group import handle_group_message
 from core.api import router as mt5_router
 
 # Setup logging
@@ -39,20 +38,6 @@ else:
 @telegram_client.on_message(filters.private & filters.text & ~filters.command(["start", "help"]))
 async def private_handler(client, message):
     await handle_private_message(client, message)
-
-@telegram_client.on_message(filters.chat(ADMIN_GROUP_ID) & (filters.photo | filters.video | filters.document | filters.text))
-async def group_handler(client, message):
-    await handle_group_message(client, message)
-
-# Optional Diagnostic Handler (Catch all in Admin Group)
-@telegram_client.on_message(filters.chat(ADMIN_GROUP_ID), group=-1)
-async def diagnostic_handler(client, message):
-    logger.info(
-        f"[DIAGNOSTIC] chat_id={message.chat.id} | chat_type={message.chat.type} | "
-        f"thread_id={message.message_thread_id} | "
-        f"has_text={bool(message.text)} | has_photo={bool(message.photo)} | "
-        f"has_doc={bool(message.document)} | ADMIN_GROUP_ID={ADMIN_GROUP_ID}"
-    )
 
 scheduler = AsyncIOScheduler(timezone=timezone('Asia/Jakarta'))
 

@@ -1,6 +1,6 @@
 from config.settings import (
     CHANNEL_LINK, CONTACT_ADMIN, MIN_DEPOSIT, 
-    OFFICIAL_WEBSITE, LINK_MEMBERSHIP, LINK_FUNDED, LINK_COPY_EXECUTION
+    OFFICIAL_WEBSITE, LINK_MEMBERSHIP
 )
 
 BRAND_NAME = "THE FOREX ENGINE"
@@ -33,15 +33,6 @@ Jawab pertanyaan dengan singkat, asik, dan berbobot. Berikut adalah layanan utam
    - Plan 1 "Core Access": IDR 290.000 / Bulan (Daily 4-8 signals, Single Entry/SL/TP, Basic Insight, Indicator, Trading Course).
    - Plan 2 "Precision Access" (HIGHLIGHT PLAN INI): IDR 780.000 / 3 Bulan (Diskon 10%. Semua fitur Core + Detailed analysis, Weekly breakdown, High-probability setups, Journal, Risk tools).
    - Plan 3 "Elite Access": IDR 2.400.000 / Tahun (Diskon 30%. Semua fitur Precision + Full system Framework, Advanced insight, Priority support, Early access).
-
-2. Funded Acceleration (Link: {LINK_FUNDED})
-   - Layanan bagi trader untuk menyelesaikan prop firm challenge dengan pendekatan berbasis sistem, disiplin, dan manajemen risiko terstruktur.
-   - Fokus: Stabilitas dan menghindari pelanggaran rule prop firm. Tidak menjamin kelulusan tapi memberi struktur peluang sukses.
-
-3. TF Engine Copy Execution (Link: {LINK_COPY_EXECUTION})
-   - Ikuti eksekusi real-time TF Engine berbasis sistem.
-   - Plan 1 "STARTER": IDR 150.000 / Bulan (2 Akun, 1 Webhook TV, Unlimited trade/rooms, Premium support).
-   - Plan 2 "PRO": IDR 999.000 / Bulan (5 Akun, 3 Webhook, Telegram as Source, Unlimited trade/rooms, High priority support).
 
 Aturan tambahan:
 - Jika ditanya layanan: Jelaskan secara singkat dan arahkan ke website official {OFFICIAL_WEBSITE} atau link spesifik layanan di atas.
@@ -87,63 +78,6 @@ Panjang: 6-9 baris. Tajam, logis, tidak berlebihan tapi meyakinkan.
 Akhiri dengan <b>{BRAND_NAME} ⚙️</b> dan hashtag {BRAND_TAG}.
 """
 
-# ── AUTO-POST CAPTIONS ─────────────────────────────────────────────────────────
-
-def get_caption_prompt(topic: str) -> str:
-    if topic == "hasil_trading":
-        return (
-            f"{SYSTEM_PERSONA}\n"
-            f"Buat 1 caption pendek (maks 3-4 kalimat) bergaya update hasil eksekusi {BRAND_NAME}. "
-            f"Tekankan pada konsistensi sistem dan probabilitas. "
-            f"Akhiri dengan <b>{BRAND_NAME} ⚙️</b> dan {BRAND_TAG}."
-        )
-    elif topic == "testimoni":
-        return (
-            f"{SYSTEM_PERSONA}\n"
-            f"Buat 1 caption pendek untuk testimoni member {BRAND_NAME}. "
-            f"Fokus pada bagaimana sistem membantu disiplin psikologi dan menghasilkan profit konsisten. "
-            f"Akhiri dengan <b>{BRAND_NAME} ⚙️</b> dan {BRAND_TAG}."
-        )
-    return (
-        f"{SYSTEM_PERSONA}\n"
-        f"Buat 1 caption pendek edukatif yang relate dengan trading dan risk management atas nama {BRAND_NAME}. "
-        f"Akhiri dengan <b>{BRAND_NAME} ⚙️</b> dan {BRAND_TAG}."
-    )
-
-def get_rebrand_prompt(topic: str, original_text: str, source: str = "") -> str:
-    """
-    Prompt khusus untuk konten yang di-forward dari channel/grup lain.
-    AI akan rewrite total agar sejalan dengan TF Engine.
-    """
-    source_note = f" (asalnya dari: {source})" if source else ""
-    topic_hint = {
-        "hasil_trading": "konteks evaluasi eksekusi / hasil trading",
-        "testimoni":     "konteks umpan balik member",
-        "lainnya":       "konteks edukasi probabilitas / informasi trading",
-    }.get(topic, "konten trading umum")
-
-    return f"""{SYSTEM_PERSONA}
-
-Anda menerima sebuah konten yang di-forward dari channel lain{source_note}.
-Konten ini perlu ditulis ulang agar sepenuhnya mencerminkan prinsip dan bahasa {BRAND_NAME}.
-
-Teks asli yang di-forward:
-\"\"\"
-{original_text}
-\"\"\"
-
-Instruksi WAJIB:
-1. Pertahankan inti/pesan utama (topik: {topic_hint}).
-2. HAPUS semua nama brand, nama channel, username, atau referensi sumber asli.
-3. GANTI semua CTA asing dengan CTA resmi TF Engine:
-   - Hubungi: {CONTACT_ADMIN}
-   - Website: {OFFICIAL_WEBSITE}
-4. Tulis ulang dengan gaya bahasa {BRAND_NAME}: profesional, logis, terstruktur.
-5. Akhiri dengan <b>{BRAND_NAME} ⚙️</b> dan {BRAND_TAG}.
-
-Output HANYA caption final. Tanpa penjelasan tambahan.
-"""
-
 # ── MT5 SIGNAL TEMPLATES ───────────────────────────────────────────────────────
 
 def get_signal_entry_text(type_str: str, symbol: str, price: float, sl: float, tp: float) -> str:
@@ -175,8 +109,8 @@ def get_signal_tp_hype_text(symbol: str) -> str:
     return (
         f"📊 <b>TARGET REACHED: {symbol}</b> 📊\n\n"
         f"Eksekusi berjalan sesuai probabilitas sistem. Konsistensi adalah kunci utama dalam trading.\n"
-        f"Bagi Anda yang ingin mengotomatiskan eksekusi dengan struktur yang sama, pelajari layanan TF Engine Copy Execution.\n\n"
-        f"Akses detail di: {LINK_COPY_EXECUTION}\n"
+        f"Bagi Anda yang ingin mengotomatiskan eksekusi dengan struktur yang sama, pelajari layanan TF Engine Private Membership.\n\n"
+        f"Akses detail di: {LINK_MEMBERSHIP}\n"
         f"Info & Join VIP: {CONTACT_ADMIN}\n\n"
         f"Execution over emotion.\n"
         f"<b>{BRAND_NAME} ⚙️</b>\n{BRAND_TAG}"
@@ -194,3 +128,4 @@ def get_signal_sl_motivation_text(symbol: str) -> str:
         f"Execution over emotion.\n"
         f"<b>{BRAND_NAME} ⚙️</b>\n{BRAND_TAG}"
     )
+
