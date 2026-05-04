@@ -17,7 +17,7 @@ from config.prompts import (
 logger = logging.getLogger(__name__)
 
 def can_send_free_signal(symbol: str) -> bool:
-    if symbol.upper() != "XAUUSD":
+    if "XAUUSD" not in symbol.upper():
         return False
     today_str = datetime.now(pytz.timezone('Asia/Jakarta')).strftime("%Y-%m-%d")
     last_sent = get_free_signal_date()
