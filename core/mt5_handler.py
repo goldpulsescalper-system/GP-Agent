@@ -49,7 +49,7 @@ async def process_mt5_signal(client: Client, payload: dict):
         if action == "ENTRY":
             text = get_signal_entry_text(type_str, symbol, price, sl, tp)
             
-            # 1. Send to VIP Channel
+            # 1. Send to VIP
             if VIP_CHANNEL_ID:
                 try:
                     msg_vip = await client.send_message(
@@ -61,21 +61,26 @@ async def process_mt5_signal(client: Client, payload: dict):
                     save_signal_message_id(ticket, "vip", msg_vip.id)
                 except Exception as e:
                     logger.error(f"Error sending to VIP: {e}")
+            else:
+                logger.error("VIP_CHANNEL_ID is not set. Skipping VIP send.")
 
             # 2. Send to Free Channel if eligible
             if can_send_free_signal(symbol):
-                try:
-                    msg_free = await client.send_message(
-                        chat_id=CHANNEL_ID,
-                        text=text,
-                        parse_mode=ParseMode.HTML,
-                        disable_web_page_preview=True
-                    )
-                    save_signal_message_id(ticket, "free", msg_free.id)
-                    mark_free_signal_sent()
-                    logger.info(f"ENTRY Signal sent to FREE. Message ID: {msg_free.id}")
-                except Exception as e:
-                    logger.error(f"Error sending to Free: {e}")
+                if CHANNEL_ID:
+                    try:
+                        msg_free = await client.send_message(
+                            chat_id=CHANNEL_ID,
+                            text=text,
+                            parse_mode=ParseMode.HTML,
+                            disable_web_page_preview=True
+                        )
+                        save_signal_message_id(ticket, "free", msg_free.id)
+                        mark_free_signal_sent()
+                        logger.info(f"ENTRY Signal sent to FREE. Message ID: {msg_free.id}")
+                    except Exception as e:
+                        logger.error(f"Error sending to Free: {e}")
+                else:
+                    logger.error("CHANNEL_ID is not set. Skipping Free send.")
 
         elif action == "MODIFY":
             text = get_signal_modify_text(sl, tp)
@@ -94,20 +99,25 @@ async def process_mt5_signal(client: Client, payload: dict):
                         )
                     except Exception as e:
                         logger.error(f"Error modify VIP: {e}")
+            else:
+                logger.error("VIP_CHANNEL_ID is not set. Cannot modify VIP message.")
             
             # Update FREE
             msg_id_free = get_signal_message_id(ticket, "free")
             if msg_id_free:
-                try:
-                    await client.send_message(
-                        chat_id=CHANNEL_ID,
-                        text=text,
-                        parse_mode=ParseMode.HTML,
-                        reply_to_message_id=msg_id_free,
-                        disable_web_page_preview=True
-                    )
-                except Exception as e:
-                    logger.error(f"Error modify FREE: {e}")
+                if CHANNEL_ID:
+                    try:
+                        await client.send_message(
+                            chat_id=CHANNEL_ID,
+                            text=text,
+                            parse_mode=ParseMode.HTML,
+                            reply_to_message_id=msg_id_free,
+                            disable_web_page_preview=True
+                        )
+                    except Exception as e:
+                        logger.error(f"Error modify FREE: {e}")
+                else:
+                    logger.error("CHANNEL_ID is not set. Cannot modify FREE message.")
 
         elif action == "CLOSE_TP":
             update_text = get_signal_tp_update_text(symbol)
@@ -125,30 +135,31 @@ async def process_mt5_signal(client: Client, payload: dict):
                             reply_to_message_id=msg_id_vip,
                             disable_web_page_preview=True
                         )
-                        # No hype text for VIP
                     except Exception as e:
                         logger.error(f"Error close TP VIP: {e}")
-
+            
             # Update FREE
             msg_id_free = get_signal_message_id(ticket, "free")
             if msg_id_free:
-                try:
-                    await client.send_message(
-                        chat_id=CHANNEL_ID,
-                        text=update_text,
-                        parse_mode=ParseMode.HTML,
-                        reply_to_message_id=msg_id_free,
-                        disable_web_page_preview=True
-                    )
-                    # Hype text only for Free
-                    await client.send_message(
-                        chat_id=CHANNEL_ID,
-                        text=hype_text,
-                        parse_mode=ParseMode.HTML,
-                        disable_web_page_preview=True
-                    )
-                except Exception as e:
-                    logger.error(f"Error close TP FREE: {e}")
+                if CHANNEL_ID:
+                    try:
+                        await client.send_message(
+                            chat_id=CHANNEL_ID,
+                            text=update_text,
+                            parse_mode=ParseMode.HTML,
+                            reply_to_message_id=msg_id_free,
+                            disable_web_page_preview=True
+                        )
+                        await client.send_message(
+                            chat_id=CHANNEL_ID,
+                            text=hype_text,
+                            parse_mode=ParseMode.HTML,
+                            disable_web_page_preview=True
+                        )
+                    except Exception as e:
+                        logger.error(f"Error close TP FREE: {e}")
+                else:
+                    logger.error("CHANNEL_ID is not set. Cannot update TP Free.")
 
         elif action == "CLOSE_SL":
             update_text = get_signal_sl_update_text(symbol)
@@ -166,30 +177,31 @@ async def process_mt5_signal(client: Client, payload: dict):
                             reply_to_message_id=msg_id_vip,
                             disable_web_page_preview=True
                         )
-                        # No motivation text for VIP
                     except Exception as e:
                         logger.error(f"Error close SL VIP: {e}")
 
             # Update FREE
             msg_id_free = get_signal_message_id(ticket, "free")
             if msg_id_free:
-                try:
-                    await client.send_message(
-                        chat_id=CHANNEL_ID,
-                        text=update_text,
-                        parse_mode=ParseMode.HTML,
-                        reply_to_message_id=msg_id_free,
-                        disable_web_page_preview=True
-                    )
-                    # Motivation text only for Free
-                    await client.send_message(
-                        chat_id=CHANNEL_ID,
-                        text=motivation_text,
-                        parse_mode=ParseMode.HTML,
-                        disable_web_page_preview=True
-                    )
-                except Exception as e:
-                    logger.error(f"Error close SL FREE: {e}")
+                if CHANNEL_ID:
+                    try:
+                        await client.send_message(
+                            chat_id=CHANNEL_ID,
+                            text=update_text,
+                            parse_mode=ParseMode.HTML,
+                            reply_to_message_id=msg_id_free,
+                            disable_web_page_preview=True
+                        )
+                        await client.send_message(
+                            chat_id=CHANNEL_ID,
+                            text=motivation_text,
+                            parse_mode=ParseMode.HTML,
+                            disable_web_page_preview=True
+                        )
+                    except Exception as e:
+                        logger.error(f"Error close SL FREE: {e}")
+                else:
+                    logger.error("CHANNEL_ID is not set. Cannot update SL Free.")
 
         else:
             logger.warning(f"Aksi tidak dikenal dari MT5: {action}")

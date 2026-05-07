@@ -3,10 +3,10 @@ from config.settings import (
     OFFICIAL_WEBSITE, LINK_MEMBERSHIP
 )
 
-BRAND_NAME = "THE FOREX ENGINE"
-BRAND_TAG   = "#TFengine"
+BRAND_NAME = "XAUENGINE"
+BRAND_TAG   = "#XAUENGINE"
 
-SYSTEM_PERSONA = f"""Nama Anda adalah "TF Engine Agent", asisten resmi dari komunitas {BRAND_NAME}.
+SYSTEM_PERSONA = f"""Nama Anda adalah "XAUENGINE Agent", asisten resmi dari komunitas {BRAND_NAME}.
 Anda adalah perwakilan dari sistem trading yang terstruktur, disiplin, dan objektif.
 Karakter Anda: Profesional, santai namun tidak kaku, solutif, langsung ke poin, dan mengedepankan logika serta manajemen risiko.
 Gaya bahasa: Gunakan kata ganti "Kita" atau "Anda", hindari penggunaan kata yang terlalu kaku seperti "Saya mengerti" atau "Tentu saja".
@@ -29,7 +29,7 @@ PRIVATE_MESSAGE_SYSTEM_PROMPT = f"""{SYSTEM_PERSONA}
 Tugas utama Anda sekarang adalah Customer Support komunitas {BRAND_NAME}.
 Jawab pertanyaan dengan singkat, asik, dan berbobot. Berikut adalah layanan utama kami:
 
-1. Private Membership (Link: {LINK_MEMBERSHIP})
+1. Private Membership VIP (Link: {LINK_MEMBERSHIP})
    - Plan 1 "Core Access": IDR 290.000 / Bulan (Daily 4-8 signals, Single Entry/SL/TP, Basic Insight, Indicator, Trading Course).
    - Plan 2 "Precision Access" (HIGHLIGHT PLAN INI): IDR 780.000 / 3 Bulan (Diskon 10%. Semua fitur Core + Detailed analysis, Weekly breakdown, High-probability setups, Journal, Risk tools).
    - Plan 3 "Elite Access": IDR 2.400.000 / Tahun (Diskon 30%. Semua fitur Precision + Full system Framework, Advanced insight, Priority support, Early access).
@@ -70,7 +70,7 @@ Gunakan teknik: Refleksi hasil trading hari ini dan perbandingan antara trading 
 
 Struktur:
 1. Pembuka malam: Evaluasi singkat pergerakan market hari ini.
-2. Inti: Tekankan bahwa hasil profit hari ini di VIP didapat dari eksekusi yang konsisten terhadap framework TF Engine, bukan keberuntungan.
+2. Inti: Tekankan bahwa hasil profit hari ini di VIP didapat dari eksekusi yang konsisten terhadap framework XAUENGINE, bukan keberuntungan.
 3. CTA: Arahkan untuk berhenti berspekulasi dan mulai gunakan sistem. Arahkan untuk gabung Private Membership, khususnya paket "Precision Access" 3 Bulan.
    Sertakan {LINK_MEMBERSHIP} dan {CONTACT_ADMIN}.
 
@@ -83,7 +83,7 @@ Akhiri dengan <b>{BRAND_NAME} ⚙️</b> dan hashtag {BRAND_TAG}.
 def get_signal_entry_text(type_str: str, symbol: str, price: float, sl: float, tp: float) -> str:
     action = "Buy" if type_str.upper() == "BUY" else "Sell"
     return (
-        f"⚙️ <b>TF ENGINE EXECUTION</b> ⚙️\n\n"
+        f"⚙️ <b>XAUENGINE EXECUTION</b> ⚙️\n\n"
         f"Pair : {symbol}\n"
         f"Arah : {action}\n\n"
         f"⚪️ Entry : {price}\n"
@@ -109,7 +109,7 @@ def get_signal_tp_hype_text(symbol: str) -> str:
     return (
         f"📊 <b>TARGET REACHED: {symbol}</b> 📊\n\n"
         f"Eksekusi berjalan sesuai probabilitas sistem. Konsistensi adalah kunci utama dalam trading.\n"
-        f"Bagi Anda yang ingin mengotomatiskan eksekusi dengan struktur yang sama, pelajari layanan TF Engine Private Membership.\n\n"
+        f"Bagi Anda yang ingin mengotomatiskan eksekusi dengan struktur yang sama, pelajari layanan XAUENGINE Private Membership.\n\n"
         f"Akses detail di: {LINK_MEMBERSHIP}\n"
         f"Info & Join VIP: {CONTACT_ADMIN}\n\n"
         f"Execution over emotion.\n"

@@ -16,9 +16,9 @@ AI_BASE_URL = "https://ai.sumopod.com/v1/"
 AI_MODEL = "gpt-4o"
 
 # Konstanta
-OFFICIAL_WEBSITE = os.getenv("OFFICIAL_WEBSITE", "https://tfengine.com")
-LINK_MEMBERSHIP = os.getenv("LINK_MEMBERSHIP", "https://tfengine.com/membership")
+OFFICIAL_WEBSITE = os.getenv("OFFICIAL_WEBSITE", "https://xauengine.com")
+LINK_MEMBERSHIP = os.getenv("LINK_MEMBERSHIP", "https://xauengine.com/membership")
 
-CHANNEL_LINK = "https://t.me/tfengine"
-CONTACT_ADMIN = "@Tfengine_admin"
-MIN_DEPOSIT = "$50"
+CHANNEL_LINK = "https://t.me/xauengine"
+CONTACT_ADMIN = "@xauengine_official"
+MIN_DEPOSIT = "$100"
